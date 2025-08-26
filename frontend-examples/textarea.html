@@ -3,6 +3,24 @@
 
 </head>
 <body>
-  <textarea id="textarea"></textarea>
-  <script></script>
+  <textarea id="textarea"  cols="80" rows="24"></textarea>
+  <script async>
+
+    async function main() {
+      const res = await fetch('https://road-animation.vercel.app/api/road-animation')
+      const frames = await res.json()
+
+      const textarea = document.getElementById('textarea');
+
+      var frame = 0
+      while(true) {
+        textarea.value = frames[frame]
+        frame = (frame + 1) % frames.length
+        await new Promise(r => setTimeout(r, 200));
+      }
+    }
+
+    main()
+
+  </script>
 </body>

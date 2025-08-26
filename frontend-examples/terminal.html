@@ -6,9 +6,35 @@
     </head>
     <body>
       <div id="terminal"></div>
-      <script>
-        var term = new Terminal();
-        term.open(document.getElementById('terminal'));
+      <script async>
+
+        async function main() {
+          const res = await fetch('https://road-animation.vercel.app/api/road-animation')
+          var term = new Terminal({
+            cols: 80,
+            rows: 25,
+            fontFamily: "monospace",
+            theme: {
+              background: "transparent",
+              foreground: "#FFFFFF"
+            },
+            cursorBlink: true
+          });
+          term.open(document.getElementById('terminal'));
+
+          const frames = await res.json()
+          var frame = 0
+          while(true) {
+            term.write('\x1b[H');  
+            term.write(frames[frame].replace(/\n/g, '\r\n'));
+            frame = (frame + 1) % frames.length
+            await new Promise(r => setTimeout(r, 200));
+          }
+        }
+
+        main()
+
+        /*
         term.onData(data => {
           if (data === '\r') {
             term.write('\r\n');  // new line
@@ -16,6 +42,18 @@
             term.write(data);    // echo everything else
           }
         });
+        */
       </script>
+
+      <style>
+        #terminal {
+          background: transparent;
+          font-family: monospace;
+          line-height: 1em;
+          width: calc(100ch);
+          height: calc(32em);
+          overflow: hidden; 
+        }
+      </style>
     </body>
   </html>

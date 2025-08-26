@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<head>
+
+</head>
+<body style="background-color: gray;">
+  <pre id="pre" style="font-family: monospace; background: transparent; color: red;"></textarea>
+  <script async>
+
+    async function main() {
+      const res = await fetch('https://road-animation.vercel.app/api/road-animation-html')
+      const frames = await res.json()
+
+      const pre = document.getElementById('pre');
+
+      var frame = 0
+      while(true) {
+        pre.innerHTML = frames[frame]
+        frame = (frame + 1) % frames.length
+        await new Promise(r => setTimeout(r, 200));
+      }
+    }
+
+    main()
+
+  </script>
+</body>

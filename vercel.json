@@ -1,3 +1,12 @@
 {
-  "redirects": [{ "source": "/", "destination": "/api"}]
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "./api/road-animation.py",
+      "methods": ["GET", "OPTIONS"],
+      "headers": {
+        "Access-Control-Allow-Origin": "*"
+      }
+    }
+  ]
 }

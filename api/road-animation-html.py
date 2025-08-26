@@ -84,6 +84,27 @@ class handler(BaseHTTPRequestHandler):
       frame.append(row)
 
     return frame
+  
+  def colour_frame(self, frame, thirdHeight):
+    newFrame = []
+    for i in range(0, len(frame)):
+      currentRow = frame[i]
+      newRow = ''
+      colour = 'white' if i < 3 else 'blue'
+      for j in range(0, len(currentRow)):
+        currentChar = currentRow[j]
+        if currentChar == '\n' or currentChar == ' ':
+          newRow += currentChar
+        elif i < thirdHeight and (currentChar == '/' or currentChar == '\\' or currentChar == '-' or currentChar == '|'):
+          newRow += ('<span style="color:' + colour + '">' + currentChar + '</span>')
+        elif currentChar == '/' or currentChar == '\\' or currentChar == '|':
+          newRow += ('<span style="color:white">' + currentChar + '</span>')
+        else:
+          newRow += currentChar
+      newFrame.append(newRow)
+        
+    return newFrame
+    
 
   def compile_road_animation(self):
     frames = []
@@ -96,8 +117,12 @@ class handler(BaseHTTPRequestHandler):
     for _ in range(60):
       # get current frame
       frame = self.draw_frame_of_road(initialFrame, height, height // 3, width // 2, pos % 3)
+      colouredFrame = self.colour_frame(frame)
       # animate
       pos = (pos + 1) % height
-      frames.append("\n".join(frame))
+      frames.append("\n".join(colouredFrame))
         
     return frames
+
+#if __name__ == "__main__":
+#  handler().compile_road_animation()
