@@ -65,8 +65,6 @@ class handler(BaseHTTPRequestHandler):
   def draw_frame_of_road(self, initialFrame, height, center, interval, foliage):
     thirdHeight = height // 3
     frame = initialFrame[:]
-    foliageLeft = foliage[0]
-    foliageRight= foliage[1]
     
     # Draw the road below the mountains
     for i in range(thirdHeight, height):
@@ -78,7 +76,7 @@ class handler(BaseHTTPRequestHandler):
       else:
         bar = (i - (interval + 1)) % 4 in (0, 1)
       
-      # Populate row with tree
+      # Populate left of row with tree
       if i < 2 * thirdHeight:
         if foliage[0][0] == 1 and foliage[0][1] == i:
           row += " " * (foliage[0][2] - i + thirdHeight) + "@" + " " * (center - 4 - foliage[0][2]) + "." + " " * (2 + i - thirdHeight)
@@ -100,32 +98,42 @@ class handler(BaseHTTPRequestHandler):
         else:
           row += " " * (center - 3 - i + thirdHeight) + "." + " " * (2 + i - thirdHeight)
       
-      
+      # add row bars
       row += "|" if bar else " "
       row += " " * (2 + i - thirdHeight) + "."
       
+      # Populate right of row with tree
       if i < 2 * thirdHeight:
+        # further trees
         if foliage[1][0] == 1 and foliage[1][1] == i:
+          # bush
           row += " " * (foliage[1][2]) + "@"
         elif foliage[1][0] == 2 and foliage[1][1] == i:
+          # top of tree
           row += " " * (foliage[1][2]) + "@"
+          # tree trunk
         elif foliage[1][0] == 2 and foliage[1][1] == i - 1:
           row += " " * (foliage[1][2] - 1) + "|"
       else:
+        # closer trees
         if foliage[1][0] == 1 and foliage[1][1] == i:
+          # bush
           row += " " * (foliage[1][2]) + "@@"
         elif foliage[1][0] == 2 and (foliage[1][1] == i):
+          # top of tree
           row += " " * (foliage[1][2]) + "@@"
         elif foliage[1][0] == 2 and (foliage[1][1] == i - 1):
+          # bottom of tree
           row += " " * (foliage[1][2] - 1) + "@@"
-        elif  not i < 2 * thirdHeight + 1 and foliage[1][0] == 2 and foliage[1][1] == i - 2:
+          # tree trunk
+        elif not i < 2 * thirdHeight + 1 and foliage[1][0] == 2 and foliage[1][1] == i - 2:
           row += " " * (foliage[1][2] - 1) + "|"
       
       frame.append(row)
 
     return frame
   
-  def colour_frame(self, frame, thirdHeight):
+  def colour_frame(self, frame, thirdHeight, centre):
     newFrame = []
     for i in range(0, len(frame)):
       currentRow = frame[i]
@@ -137,8 +145,10 @@ class handler(BaseHTTPRequestHandler):
           newRow += currentChar
         elif i < thirdHeight and (currentChar == '/' or currentChar == '\\' or currentChar == '-' or currentChar == '|'):
           newRow += ('<span style="color:' + colour + '">' + currentChar + '</span>')
-        elif currentChar == '/' or currentChar == '\\' or currentChar == '|':
-          newRow += ('<span style="color:white">' + currentChar + '</span>')
+        elif (j < centre - 2 or j > centre + 2 ) and currentChar == '|':
+          newRow += ('<span style="color:brown">' + currentChar + '</span>')
+        elif currentChar == '@':
+          newRow += ('<span style="color:green">' + currentChar + '</span>')
         else:
           newRow += currentChar
       newFrame.append(newRow)
@@ -150,7 +160,10 @@ class handler(BaseHTTPRequestHandler):
     frames = []
     width, height = shutil.get_terminal_size((80, 24))
     pos = 0
-    initialFrame = self.append_mountains(height//3, width - 1)
+    thirdHeight = height // 3
+    thirdWidth = width // 3
+    centre = width // 2
+    initialFrame = self.append_mountains(thirdHeight, width - 1)
     initialFrame.append("-" * (width - 1))
 
     # left and right tree's or bushes, one at a time
@@ -159,15 +172,15 @@ class handler(BaseHTTPRequestHandler):
     for _ in range(60):
       # get current frame
       if foliage[0][0] == 0 and random.randint(1, 8) == 8:
-        foliage[0] = [random.randint(1, 2), height - 1, random.randint(width //4, width // 3)]
+        foliage[0] = [random.randint(1, 2), thirdHeight - 1, random.randint(width // 5, thirdWidth)]
       elif foliage[1][0] == 0 and random.randint(1, 8) == 8:
-        foliage[1] = [random.randint(1, 2), height - 1, random.randint(width //4, width // 3)]
-      frame = self.draw_frame_of_road(initialFrame, height, width // 2, pos % 3, foliage)
-      colouredFrame = self.colour_frame(frame, height // 3)
+        foliage[1] = [random.randint(1, 2), thirdHeight - 1, random.randint(width // 6, width // 4)]
+      frame = self.draw_frame_of_road(initialFrame, height, centre, pos % 3, foliage)
+      colouredFrame = self.colour_frame(frame, thirdHeight, centre)
       for i in range(0, len(foliage)):
         if foliage[i][0] != 0:
-          foliage[i][1] -= 1
-        if foliage[i][1] <= height // 3 - 1:
+          foliage[i][1] += 1
+        if foliage[i][1] > height - 1:
           foliage[i] = [0,0,0]
       # animate
       pos = (pos + 1) % height
