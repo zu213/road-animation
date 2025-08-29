@@ -138,7 +138,7 @@ class handler(BaseHTTPRequestHandler):
     for i in range(0, len(frame)):
       currentRow = frame[i]
       newRow = ''
-      colour = 'white' if i < 3 else 'blue'
+      colour = '#dfdfdf' if i < 3 else '#7474ae'
       for j in range(0, len(currentRow)):
         currentChar = currentRow[j]
         if currentChar == '\n' or currentChar == ' ':
@@ -146,7 +146,7 @@ class handler(BaseHTTPRequestHandler):
         elif i < thirdHeight and (currentChar == '/' or currentChar == '\\' or currentChar == '-' or currentChar == '|'):
           newRow += ('<span style="color:' + colour + '">' + currentChar + '</span>')
         elif (j < centre - 2 or j > centre + 2 ) and currentChar == '|':
-          newRow += ('<span style="color:brown">' + currentChar + '</span>')
+          newRow += ('<span style="color:#643535">' + currentChar + '</span>')
         elif currentChar == '@':
           newRow += ('<span style="color:green">' + currentChar + '</span>')
         else:
