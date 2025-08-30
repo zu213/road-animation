@@ -1,8 +1,16 @@
 {
   "routes": [
     {
-      "src": "/(.*)",
-      "dest": "./api/road-animation.py",
+      "src": "/api/road-animation",
+      "dest": "api/road-animation",
+      "methods": ["GET", "OPTIONS"],
+      "headers": {
+        "Access-Control-Allow-Origin": "*"
+      }
+    },
+     {
+      "src": "/api/road-animation-html",
+      "dest": "api/road-animation-html",
       "methods": ["GET", "OPTIONS"],
       "headers": {
         "Access-Control-Allow-Origin": "*"
