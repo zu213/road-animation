@@ -60,9 +60,103 @@ class handler(BaseHTTPRequestHandler):
         else:
           frame[j] += " "
     
+    frame = self.append_sun(frame, width)
+    
     return frame
+  
+  def check_covered(self, mountains, i, charPos):
+    covered = False
+    for j in range(0,i + 1):
+      if(mountains[j][charPos] != " "):
+        covered = True
+    return covered
+  
+  def append_sun(self, mountains, width, radius = 4):
+    if(len(mountains) < radius): return mountains
+    
+    currentWidth = radius + 2
+    halfWidth = width // 2
+    
+    for i in range(0,radius):
+      leftCovered = False
+      rightCovered = False
+      
+      copiedLine = mountains[i]
+      charPos = halfWidth - currentWidth + 1
+      
+      leftCovered = self.check_covered(mountains, i, charPos)
+      rightCovered = self.check_covered(mountains, i, charPos + 2 * currentWidth - 1)
+      
+      newLine = copiedLine[:charPos]
+      if leftCovered:
+        newLine += copiedLine[charPos]
+      else:
+        newLine += '0'
+        
+      modifier = 0
+        
+      if i == radius - 1:
+        if not self.check_covered(mountains, i, charPos + 1):
+          newLine += '0'
+        else:
+          newLine += copiedLine[charPos + 1]
+        if not self.check_covered(mountains, i, charPos + 2):
+          newLine += '0'
+        else:
+          newLine += copiedLine[charPos + 2]
+        if not self.check_covered(mountains, i, charPos + 3):
+          newLine += '0'
+        else:
+          newLine += copiedLine[charPos + 3]
+          
+      elif i == radius - 2:
+        modifier = -2
+        if not self.check_covered(mountains, i, charPos + 1):
+          newLine += '0'
+        else:
+          newLine += copiedLine[charPos + 1]
+        newLine += copiedLine[charPos + 2:charPos + 2 * currentWidth - 1]
+        if not self.check_covered(mountains, i, charPos + 6):
+          newLine += '0'
+        else:
+          newLine += copiedLine[charPos + 6]
+        currentWidth -= 1
+      else:
+        newLine += copiedLine[charPos + 1:charPos + 2 * currentWidth]
+      
+      
+      if rightCovered:
+        newLine += copiedLine[charPos + 2 * currentWidth - 1]
+      else :
+        newLine += '0'
+        
+      newLine += copiedLine[charPos + 2 * currentWidth - modifier:]
+      mountains[i] = newLine
+      currentWidth -= 1
+      
+    currentWidth = radius + 2
+    for i in range(0,radius):
+      newLine = " " * (halfWidth - currentWidth + 1)
+      newLine += "0"
+      
+      if i == radius - 1:
+        newLine += "0" * 3
+      elif i == radius - 2:
+        newLine += "0"
+        newLine += " " * (currentWidth * 2 - 3)
+        newLine += "0"
+        currentWidth -= 1
+      else:
+        newLine += " " * (currentWidth * 2 - 1)
+      
+      newLine += "0"
+      mountains.insert(0, newLine)
+      currentWidth -= 1
+      
+    return mountains
         
   def draw_frame_of_road(self, initialFrame, height, center, interval, foliage):
+    height = height - 4
     thirdHeight = height // 3
     frame = initialFrame[:]
     
@@ -138,17 +232,19 @@ class handler(BaseHTTPRequestHandler):
     for i in range(0, len(frame)):
       currentRow = frame[i]
       newRow = ''
-      colour = '#dfdfdf' if i < 3 else '#7474ae'
+      colour = '#dfdfdf' if i < 7 else '#7474ae'
       for j in range(0, len(currentRow)):
         currentChar = currentRow[j]
         if currentChar == '\n' or currentChar == ' ':
           newRow += currentChar
-        elif i < thirdHeight and (currentChar == '/' or currentChar == '\\' or currentChar == '-' or currentChar == '|'):
+        elif i < thirdHeight + 4 and (currentChar == '/' or currentChar == '\\' or currentChar == '-' or currentChar == '|'):
           newRow += ('<span style="color:' + colour + '">' + currentChar + '</span>')
         elif (j < centre - 2 or j > centre + 2 ) and currentChar == '|':
           newRow += ('<span style="color:#643535">' + currentChar + '</span>')
         elif currentChar == '@':
           newRow += ('<span style="color:green">' + currentChar + '</span>')
+        elif currentChar == '0':
+          newRow += ('<span style="color:rgb(255, 170, 12); text-shadow: rgb(253,200,55) 0 0 5px, rgb(250,229,88) 0 0 10px;">' + currentChar + '</span>')
         else:
           newRow += currentChar
       newFrame.append(newRow)
@@ -158,7 +254,8 @@ class handler(BaseHTTPRequestHandler):
 
   def compile_road_animation(self):
     frames = []
-    width, height = shutil.get_terminal_size((80, 24))
+    width, height = shutil.get_terminal_size((80, 30))
+    height = height - 4 #reserve some space for the sun
     pos = 0
     thirdHeight = height // 3
     thirdWidth = width // 3
